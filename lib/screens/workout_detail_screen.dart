@@ -251,78 +251,125 @@ class WorkoutDetailScreen extends StatelessWidget {
                                 label = '$totalSets sets · $totalReps reps';
                               }
 
-                              return InkWell(
-                                onTap: () {
-                                  Navigator.push(
+                              final entryId = entry['id']?.toString() ?? '';
+                              return Dismissible(
+                                key: ValueKey(
+                                  entryId.isNotEmpty
+                                      ? entryId
+                                      : 'exercise-$index',
+                                ),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  color: AppColors.primary,
+                                  child: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
+                                onDismissed: (_) async {
+                                  final messenger = ScaffoldMessenger.of(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ExerciseDetailScreen(
-                                        workoutId: workout.id,
-                                        exerciseEntryId:
-                                            entry['id']?.toString() ?? '',
-                                        sessionTitle: workout.title,
-                                        workoutDate: workout.createdAt,
-                                        exerciseName: name,
-                                        imageUrl: imageUrl,
-                                      ),
-                                    ),
                                   );
-                                },
-                                child: Container(
-                                  color: Colors.white,
-                                  height: 82,
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      _buildExerciseImageOrInitials(
-                                        name,
-                                        imageUrl,
+                                  final box = Hive.box('workoutExercises');
+                                  try {
+                                    if (entryId.isNotEmpty) {
+                                      await box.delete(entryId);
+                                    }
+                                    messenger.showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Exercise removed from workout',
+                                        ),
+                                        duration: Duration(seconds: 1),
                                       ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              name,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize:
-                                                    MediaQuery.of(
-                                                      context,
-                                                    ).size.width *
-                                                    0.048,
-                                                color: AppColors.textPrimary,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 7),
-                                            Text(
-                                              label,
-                                              style: TextStyle(
-                                                fontSize:
-                                                    MediaQuery.of(
-                                                      context,
-                                                    ).size.width *
-                                                    0.0385,
-                                                color: AppColors.textSecondary,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
+                                    );
+                                  } catch (e) {
+                                    messenger.showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to remove: $e'),
+                                        backgroundColor: AppColors.primary,
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ExerciseDetailScreen(
+                                          workoutId: workout.id,
+                                          exerciseEntryId: entryId,
+                                          sessionTitle: workout.title,
+                                          workoutDate: workout.createdAt,
+                                          exerciseName: name,
+                                          imageUrl: imageUrl,
                                         ),
                                       ),
-                                      Icon(
-                                        Icons.chevron_right,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                      const SizedBox(width: 14),
-                                    ],
+                                    );
+                                  },
+                                  child: Container(
+                                    color: Colors.white,
+                                    height: 82,
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        _buildExerciseImageOrInitials(
+                                          name,
+                                          imageUrl,
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                name,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize:
+                                                      MediaQuery.of(
+                                                        context,
+                                                      ).size.width *
+                                                      0.048,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 7),
+                                              Text(
+                                                label,
+                                                style: TextStyle(
+                                                  fontSize:
+                                                      MediaQuery.of(
+                                                        context,
+                                                      ).size.width *
+                                                      0.0385,
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Icon(
+                                          Icons.chevron_right,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                        const SizedBox(width: 14),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );
